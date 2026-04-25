@@ -6,7 +6,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: 'https://resonant-babka-b563fb.netlify.app',
     credentials: true,
   })
 );
