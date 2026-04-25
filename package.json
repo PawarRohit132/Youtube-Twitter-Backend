@@ -1,32 +1,38 @@
 {
-  "name": "backend-project",
+  "name": "coffee-backend",
   "version": "1.0.0",
-  "description": "a backend project ",
+  "description": "backend with coffee",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js",
+    "start": "node src/index.js"
+  },
   "keywords": [
     "javascript",
-    "backend"
+    "backend",
+    "coffee"
   ],
+  "author": "Hruthik",
   "license": "ISC",
-  "author": "",
-  "type": "module",
-  "main": "index.js",
-  "scripts": {
-    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
-  },
   "devDependencies": {
-    "nodemon": "^3.1.10",
-    "prettier": "^3.5.3"
+    "nodemon": "^3.1.7",
+    "prettier": "^3.0.3"
   },
   "dependencies": {
-    "bcrypt": "^6.0.0",
-    "cloudinary": "^2.6.1",
-    "cookie-parser": "^1.4.7",
+    "bcrypt": "^5.1.1",
+    "cloudinary": "^1.41.0",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "dotenv": "^16.5.0",
-    "express": "^5.1.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.15.1",
-    "mongoose-aggregate-paginate-v2": "^1.1.4",
-    "multer": "^2.0.1"
+    "mongoose": "^8.0.0",
+    "mongoose-aggregate-paginate-v2": "^1.0.6",
+    "morgan": "^1.10.0",
+    "multer": "^2.0.0"
   }
 }

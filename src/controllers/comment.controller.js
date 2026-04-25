@@ -6,17 +6,23 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 
 const getVideoComments = asyncHandler(async (req, res) => {
-    //TODO: get all comments for a video
+   
     const {videoId} = req.params
     const {page = 1, limit = 10} = req.query
 
     const video = await Video.findById(videoId)
+   
+    
 
     if (!video) {
-        throw new ApiError(404, "Video not found");
+        res.status(404)
+        .json({
+            success:false,
+            message : "Video not found"
+        })
     }
 
-    const commentAggregate = await Comment.aggregate([
+    const commentAggregate = Comment.aggregate([
         {
             $match : {
                 video : new mongoose.Types.ObjectId(videoId)
@@ -44,12 +50,34 @@ const getVideoComments = asyncHandler(async (req, res) => {
                 owner : {
                     $first : "$owner"
                 },
-                likeCount : {
-                    $size : "$likes"
+                likesCount : {
+                    $size : {
+                        $filter : {
+                            input: { $ifNull: ["$likes", []] },
+                            as : "l",
+                            cond : {$eq : ["$$l.type", "like"]}
+                        }
+                    }
+                },
+                dislikesCount : {
+                    $size : {
+                        $filter : {
+                            input: { $ifNull: ["$likes", []] },
+                            as : "l",
+                            cond : {$eq : ["$$l.type", "dislike"]}
+                        }
+                    }
                 },
                 isLiked : {
                     $cond : {
-                        if : {$in : [req.user_id, "$likes.likedBy"]},
+                        if : {$in : [req.user._id, "$likes.likedBy"]},
+                        then : true,
+                        else : false
+                    }
+                },
+                isDisLiked : {
+                    $cond : {
+                        if : {$in : [req.user._id, "$likes.likedBy"]},
                         then : true,
                         else : false
                     }
@@ -66,25 +94,28 @@ const getVideoComments = asyncHandler(async (req, res) => {
                 content : 1,
                 createdAt : 1,
                 likesCount : 1,
+                dislikesCount :1,
                 owner : {
                     username : 1,
                     fullname : 1,
-                    "avatar.url" : 1
+                    avatar : 1,
                 },
-                isLiked : 1
+                isLiked : 1,
+                isDisLiked :1
             }
         }
     ]);
 
     const options = {
-        page : parseInt(page, 1),
-        limit : parseInt(page, 10)
+        page : parseInt(page, 10),
+        limit : parseInt(limit, 10)
     }
 
     const comment = await Comment.aggregatePaginate(
         commentAggregate,
         options
     );
+
 
       return res
         .status(200)
@@ -93,33 +124,49 @@ const getVideoComments = asyncHandler(async (req, res) => {
 
 
 const addComment = asyncHandler(async (req, res) => {
-    // TODO: add a comment to a video
-    const {videoId} = req.params
+
+    const {videoId} = req.params;
     const {content} = req.body;
 
     if(!content){
-        throw new ApiError(400, "content is required")
+        return res.status(400)
+        .json({
+            success : false,
+            message : "content is required"
+        })
     }
 
     const video = await Video.findById(videoId);
 
     if(!video){
-        throw new ApiError(404, "video not found")
+        return res.status(404)
+        .json({
+            success : false,
+            message : "video not found"
+        })
     }
+
 
     const comment = await Comment.create({
         content,
-        video : videoId,
+        video : new mongoose.Types.ObjectId(videoId),
         owner : req.user._id
     })
 
+    const populateComment = await Comment.findById(comment._id)
+    .populate("owner", "username avatar");
+
     if(!comment){
-        throw new ApiError(500, "something wents wrong while create comment")
+        return res.status(500)
+        .json({
+            success : false,
+            message : "something wents wrong while creating comment"
+        })
     }
 
     return res.status(200)
     .json(
-        new ApiResponse(200, comment, "comment added successfully")
+        new ApiResponse(200, populateComment, "comment added successfully")
     )
    
 
