@@ -177,8 +177,10 @@ const getAllVideos = asyncHandler(async (req, res) => {
 const publishAVideo = asyncHandler(async (req, res) => {
   const { title, description } = req.body;
 
-  if ([title, description].some((field) => field?.trim() === "")) {
+  if ([title, description].some((field) => field?.trim()  ==="")) {
     throw new ApiError(400, "All fields are required");
+
+    //
   }
 
   // const videoFileLocalPath = req.files?.videoFile[0].path;
@@ -234,6 +236,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
 });
 
 const getVideoById = asyncHandler(async (req, res) => {
+
   const { videoId } = req.params;
   const userId = req.user._id;
 
@@ -272,7 +275,7 @@ const getVideoById = asyncHandler(async (req, res) => {
             $filter : {
               input : "$likes",
               as : "l",
-              cond : {$eq : ["$$l.type", "like"]}
+              cond : {$eq : ["$$l.type", "dislike"]}
             }
           }
         },
@@ -395,7 +398,9 @@ const getVideoById = asyncHandler(async (req, res) => {
 
 const updateVideo = asyncHandler(async (req, res) => {
   const {videoId} = req.params
+
   const { title, description } = req.body;
+
   const userId = req.user._id;
 
   if (!isValidObjectId(videoId)) {
@@ -518,7 +523,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
   const deletedVideo = await Video.findByIdAndDelete(videoId);
 
-  if (!deleteVideo) {
+  if (!deletedVideo) {
     throw new ApiError(
       500,
       "something went wrong while deleting video please try again"
@@ -543,6 +548,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
+
   if (!isValidObjectId(videoId)) {
     return res.status(404).json({
       success: false,

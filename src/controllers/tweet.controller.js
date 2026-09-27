@@ -7,7 +7,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const createTweet = asyncHandler(async (req, res) => {
   //TODO: create tweet
-  const { content, owner } = req.body;
+  const { content } = req.body;
 
   if (!content) {
     throw new ApiError(400, "content is required");
@@ -263,7 +263,7 @@ const getAllTweets = asyncHandler(async (req, res) => {
     },
     {
       $lookup: {
-        from: "dislikes",
+        from: "likes",
         localField: "_id",
         foreignField: "tweet",
         as: "dislikes",
