@@ -16,7 +16,7 @@ const createPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All fields are required")
     }
 
-    const playList = await await Playlist.create(
+    const playList = await Playlist.create(
         {
             name,
             description
