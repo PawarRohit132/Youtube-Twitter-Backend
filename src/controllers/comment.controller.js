@@ -53,7 +53,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
                 likesCount : {
                     $size : {
                         $filter : {
-                            input: { $ifNull: ["$likes", []] },
+                            input: "$likes",
                             as : "l",
                             cond : {$eq : ["$$l.type", "like"]}
                         }
@@ -62,26 +62,48 @@ const getVideoComments = asyncHandler(async (req, res) => {
                 dislikesCount : {
                     $size : {
                         $filter : {
-                            input: { $ifNull: ["$likes", []] },
+                            input: "$likes",
                             as : "l",
                             cond : {$eq : ["$$l.type", "dislike"]}
                         }
                     }
                 },
-                isLiked : {
-                    $cond : {
-                        if : {$in : [req.user._id, "$likes.likedBy"]},
-                        then : true,
-                        else : false
-                    }
-                },
-                isDisLiked : {
-                    $cond : {
-                        if : {$in : [req.user._id, "$likes.likedBy"]},
-                        then : true,
-                        else : false
-                    }
-                }
+                isLiked: {
+                          $in: [
+                            new mongoose.Types.ObjectId(req.user._id),
+                            {
+                              $map: {
+                                input: {
+                                  $filter: {
+                                    input: "$likes",
+                                    as: "l",
+                                    cond: { $eq: ["$$l.type", "like"] },
+                                  },
+                                },
+                                as: "l",
+                                in: "$$l.likedBy",
+                              },
+                            },
+                          ],
+                        },
+                isDisLiked: {
+                          $in: [
+                            new mongoose.Types.ObjectId(req.user._id),
+                            {
+                              $map: {
+                                input: {
+                                  $filter: {
+                                    input: "$likes",
+                                    as: "l",
+                                    cond: { $eq: ["$$l.type", "dislike"] },
+                                  },
+                                },
+                                as: "l",
+                                in: "$$l.likedBy",
+                              },
+                            },
+                          ],
+                        },
             }
         },
         {
